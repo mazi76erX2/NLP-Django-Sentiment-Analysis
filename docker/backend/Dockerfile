@@ -6,7 +6,8 @@ ENV TZ=UTC+2
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y netcat libpq5 build-essential libpq-dev
+RUN apt-get update && apt-get install -y netcat libpq5 build-essential libpq-dev \
+    nvidia-cuda-toolkit nvidia-cuda-toolkit-gcc
 
 # Install tools
 RUN pip3 install --progress-bar off --upgrade pip

@@ -7,10 +7,11 @@ name = "pypi"
 django = "5.0.6"
 djangorestframework = "3.15.1"
 python-dotenv = "1.0.1"
-psycopg2-binary = "==2.9.9"
-torch = "*"
-transformers = "*"
+psycopg2-binary = "2.9.9"
 drf-yasg = "*"
+tensorflow = "*"
+tf-keras = "*"
+transformers = {extras = ["tensorflow"], version = "*"}
 
 [dev-packages]
 mypy = "*"
