@@ -17,8 +17,10 @@ BLACK := $(PIPENV) run black
 MYPY := $(PIPENV) run mypy
 ISORT := $(PIPENV) run isort
 
-APP_NAME = nlp-sentiiment-analysis:0.0.1
-APP_DIR = nlp_sentiiment_analysis
+POSTGRES_COMMAND := /Applications/Postgres.app/Contents/Versions/latest/bin
+
+APP_NAME = nlp-sentiment-analysis:0.0.1
+APP_DIR = nlp_sentiment_analysis
 TEST_SRC = $(APP_DIR)/tests
 
 help: ## Show available targets
@@ -55,14 +57,17 @@ create-local-database-linux:
 
 create-local-database-mac:
 	sudo mkdir -p /etc/paths.d && \
-  	echo /Applications/Postgres.app/Contents/Versions/latest/bin \
+  	echo $(POSTGRES_COMMAND) \
   	| sudo tee /etc/paths.d/postgresapp
 
-	sudo psql -U postgres -c 'create database $(DATABASE_NAME);'
-	sudo psql -U postgres -c 'grant all privileges on database $(DATABASE_NAME) to $(DATABASE_USERNAME);'
+	sudo $(POSTGRES_COMMAND)/psql -U postgres -c 'create database $(DATABASE_NAME);'
+	sudo $(POSTGRES_COMMAND)/psql -U postgres -c 'grant all privileges on database $(DATABASE_NAME) to $(DATABASE_USERNAME);'
 
-drop-local-database:
+drop-local-database-linux:
 	sudo psql -U postgres -c 'drop database $(DATABASE_NAME);'
+
+drop-local-database-mac:
+	sudo $(POSTGRES_COMMAND)/psql -U postgres -c 'drop database $(DATABASE_NAME);'
 
 run-local:
 	$(PYTHON) $(APP_DIR)/manage.py migrate && python3 $(APP_DIR)/manage.py runserver

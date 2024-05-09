@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -23,6 +22,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 def str2bool(arg: int | str) -> bool:
+    """
+    Converts string to Boolean for .env file
+    """
     return str(arg).lower() in ("1", "true")
 
 
@@ -30,7 +32,6 @@ def str2bool(arg: int | str) -> bool:
 DEBUG = str2bool(os.environ.get("DEBUG", "false"))
 
 ALLOWED_HOSTS: list[str] = os.environ.get("ALLOWED_HOST_DNS", "").split(" ")
-
 
 
 # Application definition
@@ -43,8 +44,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Apps
+    "text_analysis",
     # 3rd-party
     "rest_framework",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -87,7 +91,7 @@ DATABASES = {
         "NAME": os.environ.get("DATABASE_NAME", "sentiment-analysis"),
         "USER": os.environ.get("DATABASE_USERNAME", "postgres"),
         "PASSWORD": os.environ.get("DATABASE_PASSWORD", "postgres"),
-        "HOST": os.environ.get("DATABASE_HOST", "db"),
+        "HOST": os.environ.get("DATABASE_HOST", "localhost"),
         "PORT": os.environ.get("DATABASE_PORT", "5432"),
     }
 }
