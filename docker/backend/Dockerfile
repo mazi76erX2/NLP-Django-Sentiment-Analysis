@@ -14,7 +14,8 @@ RUN pip3 install --progress-bar off --upgrade pip
 # Stage 2: Application build (smaller)
 FROM python:3.12.2-slim AS app
 
-# Copy Pipfile and Pipfile.lock for dependency installation
+# Install Pipenv, copy Pipfile and Pipfile.lock for dependency installation
+RUN pip3 install --progress-bar off pipenv
 COPY Pipfile Pipfile.lock ./
 
 # Install dependencies based on Pipfile
@@ -27,11 +28,8 @@ COPY . .
 # Stage 3: Final image (production-ready)
 FROM app AS final
 
-# Install development dependencies (optional)
+# Install development dependencies
 RUN pipenv install --dev
-
-# Set up the Django application
-RUN nlp_sentiment_analysis/manage.py collectstatic --noinput
 
 # Set up the entrypoint script
 COPY docker/backend/entrypoint.sh /entrypoint.sh

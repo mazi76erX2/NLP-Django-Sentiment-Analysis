@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Chack if database has started
-if [ "$DATABASE" = "postgres" ]
+if [ "$DATABASE" = "sentiment-analysis" ]
 then
     echo "Waiting for postgres..."
 

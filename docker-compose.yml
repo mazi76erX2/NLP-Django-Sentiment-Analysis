@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   backend:
     restart: unless-stopped
@@ -8,20 +6,8 @@ services:
       dockerfile: ./docker/backend/Dockerfile
     entrypoint: /app/docker/backend/entrypoint.sh
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - static_volume:/app/nlp_sentiment_analysis/static
-    environment:
-      - DATABASE_NAME=${DATABASE_NAME}
-      - DATABASE_USERNAME=${DATABASE_USERNAME}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_HOST=${DATABASE_HOST}
-      - DATABASE_PORT=${DATABASE_PORT}
-      - ALLOWED_HOST_DNS=${ALLOWED_HOST_DNS}
-      - DEBUG=${DEBUG}
-      - REDIS_HOST=${REDIS_HOST}
     depends_on:
       - db
-      - redis
     networks:
       - backend
     ports:
@@ -37,7 +23,6 @@ services:
       - POSTGRES_USER=${DATABASE_USERNAME}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-      - POSTGRES_HOST=${DATABASE_HOST}
     ports:
       - 5432:5432
     expose:
@@ -51,19 +36,9 @@ services:
       retries: 5
     networks:
       - backend
-  redis:
-    image: redis:6.2-alpine
-    restart: always
-    ports:
-      - 6379:6379
-    volumes:
-      - redis-data:/data
-    networks:
-      - backend
 volumes:
   static_volume: {}
   db: {}
-  redis-data: {}
 
 networks:
   backend:
