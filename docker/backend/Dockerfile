@@ -1,5 +1,5 @@
 # Stage 1: Build environment (slim)
-FROM python:3.12.2-slim-bullseye AS builder
+FROM python:3.11.9-slim-bullseye AS builder
 
 # Set timezone
 ENV TZ=UTC+2
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y netcat libpq5 build-essential libpq-dev
 RUN pip3 install --progress-bar off --upgrade pip
 
 # Stage 2: Application build (smaller)
-FROM python:3.12.2-slim AS app
+FROM python:3.11.9-slim AS app
 
 # Install Pipenv, copy Pipfile and Pipfile.lock for dependency installation
 RUN pip3 install --progress-bar off pipenv

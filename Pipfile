@@ -11,7 +11,8 @@ psycopg2-binary = "2.9.9"
 drf-yasg = "*"
 tensorflow = "*"
 tensorflow-text="*"
-transformers = {extras = ["tensorflow"], version = "*"}
+transformers = "*"
+tf-keras = "*"
 
 [dev-packages]
 mypy = "*"

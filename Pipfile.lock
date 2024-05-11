@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9256f3168e1d2a5fd88ea62060b9fe2c396b88c3df9f9f6d870f3d59caf8e733"
+            "sha256": "32fe523350371c9647ab5a60517c6aa0987838a3bccc88edc2003a2097ea5b41"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1050,6 +1050,15 @@
             "markers": "python_version >= '3.8'",
             "version": "==2.4.0"
         },
+        "tf-keras": {
+            "hashes": [
+                "sha256:b2ad0541fa7d9e92c4b7a1b96593377afb58aaff374299a6ca6be1a42f51d899",
+                "sha256:db53891f1ac98197c2acced98cdca8c06ba8255655a6cb7eb95ed49676118280"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==2.16.0"
+        },
         "tokenizers": {
             "hashes": [
                 "sha256:01d62812454c188306755c94755465505836fd616f75067abcae529c35edeb57",
@@ -1172,6 +1181,7 @@
                 "sha256:657b6054a2097671398d976ad46e60836e7e15f9ea9551631a96e33cb9240649",
                 "sha256:71cb94301ec211a2e1d4b8c8d18dcfaa902dfa00a089dceca167a8aa265d6f2d"
             ],
+            "index": "pypi",
             "markers": "python_full_version >= '3.8.0'",
             "version": "==4.40.2"
         },
