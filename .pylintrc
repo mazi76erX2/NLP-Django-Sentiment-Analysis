@@ -2,3 +2,4 @@
 disable=
     C0114, # missing-module-docstring
     E1136, # unscriptable
+    W0703, # broad-except

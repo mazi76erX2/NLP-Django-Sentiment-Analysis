@@ -10,8 +10,9 @@ python-dotenv = "1.0.1"
 psycopg2-binary = "2.9.9"
 drf-yasg = "*"
 tensorflow = "*"
-tensorflow-text="*"
 transformers = "*"
+numpy = "*"
+scipy = "*"
 tf-keras = "*"
 
 [dev-packages]

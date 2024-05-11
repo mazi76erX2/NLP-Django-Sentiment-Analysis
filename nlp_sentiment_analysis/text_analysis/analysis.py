@@ -1,83 +1,56 @@
-import string
-
-from transformers import TFBertForSequenceClassification
+from transformers import TFAutoModelForSequenceClassification, AutoTokenizer
 import tensorflow as tf
-from tensorflow_text import WordpieceTokenizer
 
 
-DictSentiment = dict[int, dict[str, float]]
-TupleProcessedTokens = tuple[list[str], list[int]]
+MODEL: str = "cardiffnlp/twitter-roberta-base-sentiment"
+tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(MODEL)
+model: TFAutoModelForSequenceClassification = (
+    TFAutoModelForSequenceClassification.from_pretrained(MODEL)
+)
+sentiment_labels: list[str] = ["negative", "neutral", "positive"]
 
-MODEL_NAME = "bert/base-uncased-sentiment"
-MAX_LEN = 512
 
-
-def load_model(model_name=MODEL_NAME) -> TFBertForSequenceClassification:
+def analyse_sentiment(text: str) -> dict[str, float]:
     """
-    Loads a pre-trained BERT model for sentiment classification.
-    """
-    return TFBertForSequenceClassification.from_pretrained(model_name, num_labels=2)
-
-
-def create_tokenizer(model: TFBertForSequenceClassification) -> WordpieceTokenizer:
-    """
-    Creates a WordpieceTokenizer based on the model's vocabulary.
-    """
-    return WordpieceTokenizer(vocabulary_list=model.config.vocab_file.content)
-
-
-def preprocess_text(
-    text: str, model: TFBertForSequenceClassification
-) -> TupleProcessedTokens:
-    """
-    Preprocesses text for sentiment analysis using a BERT model.
-    """
-    text = text.lower()
-    text = "".join([char for char in text if char not in string.punctuation])
-    tokenizer = create_tokenizer(model)
-    tokens = tokenizer.tokenize(text)
-
-    padding = "max_length" if len(tokens) < MAX_LEN else "post_truncation"
-    padded_tokens = tf.keras.preprocessing.sequence.pad_sequences(
-        [tokens], maxlen=MAX_LEN, padding=padding, truncating="post"
-    ).tolist()[0]
-    return padded_tokens
-
-
-def predict_sentiment(
-    model: TFBertForSequenceClassification, text: str
-) -> DictSentiment:
-    """
-    Predicts sentiment for a given text using the loaded BERT model.
-    """
-    encoded_text = preprocess_text(text, model)
-    outputs = model(encoded_text)
-    logits = outputs.logits
-    predictions = tf.math.argmax(logits, axis=-1).numpy()[0]
-
-    # Sentiment mapping (adjust based on model output)
-    sentiment = {
-        0: {"polarity": -1.0, "subjectivity": 0.0},  # Negative
-        1: {"polarity": 1.0, "subjectivity": 0.0},  # Positive
-    }
-
-    predicted_class = predictions
-    sentiment_scores = sentiment[predicted_class]
-    return {"text_sentiment": sentiment_scores}
-
-
-def analyze_sentiment(text: str) -> DictSentiment:
-    """
-    Analyzes text sentiment using a pre-trained BERT model from TensorFlow Hub.
+    Analyzes sentiment of a given text using the pre-trained RoBERTa model.
 
     Args:
-        text: The text input for sentiment analysis (str).
+        text: The text to analyze (str).
 
     Returns:
-        A dictionary containing sentiment scores for the provided text DictSentiment.
-        The dictionary key is the predicted sentiment class (int),
-        and the value is another dictionary with "polarity" and "subjectivity" scores (float).
+        A tuple containing the predicted sentiment label ("positive", "neutral", "negative")
+        and the confidence score associated with the prediction (float).
     """
-    model = load_model()
-    sentiment_scores = predict_sentiment(model, text)
-    return sentiment_scores
+    try:
+        encoded_input: tf.Tensor = tokenizer(
+            text,
+            padding="max_length",
+            truncation=True,
+            max_length=512,
+            return_tensors="tf",
+        )
+        outputs: dict = model(encoded_input)
+        logits: tf.Tensor = outputs.logits[0]  # Access logits from the first output
+        predictions: tf.Tensor = tf.nn.softmax(logits)
+
+        top_prediction, top_index = tf.nn.top_k(predictions, k=1)
+        predicted_label_id: int = top_index.numpy()[0]
+        predicted_label: str = sentiment_labels[predicted_label_id]
+        confidence_score: float = top_prediction.numpy()[0]
+
+        return {"sentiment": predicted_label, "confidence_score": confidence_score}
+
+    except (ValueError, tokenizer.PreprocessingException) as e:
+        # Handle potential errors during preprocessing or input conversion
+        print(f"An error occurred during text preprocessing: {e}")
+        return {"error": "Preprocessing error"}
+
+    except (tf.errors.OutOfRangeError, tf.errors.InvalidArgumentError) as e:
+        # Handle potential TensorFlow errors (e.g., out-of-range tensor indices)
+        print(f"A TensorFlow error occurred: {e}")
+        return {"error": "TensorFlow error"}
+
+    except Exception as e:
+        # Handle specific ValueError exception
+        print(f"An unexpected error occurred: {e}")
+        return {"error": "Unexpected error"}

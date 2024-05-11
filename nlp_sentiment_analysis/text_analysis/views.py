@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from .analysis import analyze_sentiment, DictSentiment
+from .analysis import analyse_sentiment
 from .models import Analysis
 from .serializers import AnalysisSerializer
 
@@ -32,8 +32,8 @@ class BulkAnalysisViewSet(viewsets.ModelViewSet):
     }
     """
 
-    queryset = Analysis.objects.all()
-    serializer_class = AnalysisSerializer
+    queryset: Analysis = Analysis.objects.all()
+    serializer_class: AnalysisSerializer = AnalysisSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # Extract list of texts from request data
@@ -45,16 +45,21 @@ class BulkAnalysisViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        sentiment_results: list[DictSentiment] = []
+        sentiment_results: list[dict[str, float]] = []
         for text in texts:
-            sentiment = analyze_sentiment(text)
+            sentiment = analyse_sentiment(text)
             sentiment_results.append(sentiment)
 
         # Create and save analysis objects
         analyses: list[Analysis] = []
         for result, text in zip(sentiment_results, texts):
-            analysis: Analysis = Analysis.objects.create(text=text, **result)
+            analysis: Analysis = Analysis(
+                text=text,
+                sentiment=result.sentiment,
+                confidence_score=result.confidence_score,
+            )
             analyses.append(analysis)
+        Analysis.objects.bulk_create(analyses)
 
         # Serialize and return response
         serializer: AnalysisSerializer = AnalysisSerializer(analyses, many=True)
