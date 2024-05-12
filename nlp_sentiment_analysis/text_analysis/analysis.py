@@ -1,5 +1,4 @@
 import logging
-import asyncio
 
 from transformers import TFAutoModelForSequenceClassification, AutoTokenizer
 import tensorflow as tf
@@ -48,19 +47,25 @@ async def analyse_sentiment_async(text: str) -> dict[str, float]:
         predicted_label: str = sentiment_labels[predicted_label_id]
         confidence_score: float = top_prediction.numpy()[0]
 
+        logging.info(
+            "Sentiment analysis for '%s': %s (%.2f)",
+            text,
+            predicted_label,
+            confidence_score,
+        )
         return {"sentiment": predicted_label, "confidence_score": confidence_score}
 
-    except (ValueError, tokenizer.PreprocessingException) as e:
+    except ValueError as e:
         # Handle potential errors during preprocessing or input conversion
-        print(f"An error occurred during text preprocessing: {e}")
+        logging.error("An error occurred during text preprocessing '%s': %s", text, e)
         return {"error": "Preprocessing error"}
 
     except (tf.errors.OutOfRangeError, tf.errors.InvalidArgumentError) as e:
         # Handle potential TensorFlow errors (e.g., out-of-range tensor indices)
-        print(f"A TensorFlow error occurred: {e}")
+        logging.error("A TensorFlow error occurred '%s': %s", text, e)
         return {"error": "TensorFlow error"}
 
     except Exception as e:
         # Handle specific ValueError exception
-        print(f"An unexpected error occurred: {e}")
+        logging.error("An unexpected error occurred '%s': %s", text, e)
         return {"error": "Unexpected error"}
