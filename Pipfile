@@ -11,9 +11,8 @@ psycopg2-binary = "2.9.9"
 drf-yasg = "*"
 tensorflow = "*"
 transformers = "*"
-numpy = "*"
-scipy = "*"
 tf-keras = "*"
+asyncio = "*"
 
 [dev-packages]
 mypy = "*"

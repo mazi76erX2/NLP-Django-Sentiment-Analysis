@@ -1,3 +1,6 @@
+import logging
+import asyncio
+
 from transformers import TFAutoModelForSequenceClassification, AutoTokenizer
 import tensorflow as tf
 
@@ -8,9 +11,12 @@ model: TFAutoModelForSequenceClassification = (
     TFAutoModelForSequenceClassification.from_pretrained(MODEL)
 )
 sentiment_labels: list[str] = ["negative", "neutral", "positive"]
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
-def analyse_sentiment(text: str) -> dict[str, float]:
+async def analyse_sentiment_async(text: str) -> dict[str, float]:
     """
     Analyzes sentiment of a given text using the pre-trained RoBERTa model.
 
@@ -22,13 +28,17 @@ def analyse_sentiment(text: str) -> dict[str, float]:
         and the confidence score associated with the prediction (float).
     """
     try:
-        encoded_input: tf.Tensor = tokenizer(
-            text,
-            padding="max_length",
-            truncation=True,
-            max_length=512,
-            return_tensors="tf",
-        )
+
+        async def _encode_text(text: str) -> tf.Tensor:
+            return tokenizer(
+                text,
+                padding="max_length",
+                truncation=True,
+                max_length=512,
+                return_tensors="tf",
+            )
+
+        encoded_input = await _encode_text(text)
         outputs: dict = model(encoded_input)
         logits: tf.Tensor = outputs.logits[0]  # Access logits from the first output
         predictions: tf.Tensor = tf.nn.softmax(logits)
