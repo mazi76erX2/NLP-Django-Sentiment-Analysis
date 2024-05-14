@@ -3,6 +3,7 @@ import logging
 from transformers import TFAutoModelForSequenceClassification, AutoTokenizer
 import tensorflow as tf
 
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 MODEL: str = "cardiffnlp/twitter-roberta-base-sentiment"
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(MODEL)
