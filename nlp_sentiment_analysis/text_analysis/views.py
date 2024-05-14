@@ -1,20 +1,24 @@
 from typing import Optional, Any, List, Dict
 
+import asyncio
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.permissions import AllowAny
+
+from adrf.viewsets import ViewSet
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 from .analysis import analyse_sentiment_async
 from .models import Analysis
 from .serializers import AnalysisSerializer
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from adrf.views import APIView
-import asyncio
 
-
-class BulkAnalysisViewSet(APIView):
+class BulkAnalysisViewSet(ViewSet):
     """
     Async ViewSet for performing bulk sentiment analysis on a list of texts.
 
@@ -36,10 +40,26 @@ class BulkAnalysisViewSet(APIView):
     }
     """
 
+    queryset = Analysis.objects.all()
+    serializer_class = AnalysisSerializer
     permission_classes = [AllowAny]
 
-    async def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["texts"],
+            properties={
+                "texts": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_STRING),
+                )
+            },
+        )
+    )
+    async def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         texts: Optional[List[str]] = request.data.get("texts", [])
+
+        texts = ["I hate this product!", "This movie is great."]
 
         if not texts:
             return Response(
@@ -58,7 +78,7 @@ class BulkAnalysisViewSet(APIView):
             )
             for result, text in zip(sentiment_results, texts)
         ]
-        Analysis.objects.bulk_create(analyses)
+        await Analysis.objects.abulk_create(analyses)
 
         serializer = AnalysisSerializer(analyses, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
