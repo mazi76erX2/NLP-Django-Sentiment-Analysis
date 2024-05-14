@@ -1,6 +1,10 @@
-from typing import Optional, Any, List, Dict
-
 import asyncio
+import logging
+
+from typing import Optional, Any
+
+from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -28,7 +32,7 @@ class BulkAnalysisViewSet(ViewSet):
         and returns the analysis results.
 
     The post action expects a POST request with the following data:
-    - texts: A list of texts (in string format) to be analyzed. (Optional[List[str]])
+    - texts: A list of texts (in string format) to be analyzed. (Optional[list[str]])
 
     The post action returns a response with the following data:
     - A list of analysis objects containing the sentiment analysis results.
@@ -57,20 +61,29 @@ class BulkAnalysisViewSet(ViewSet):
         )
     )
     async def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        texts: Optional[List[str]] = request.data.get("texts", [])
-
-        texts = ["I hate this product!", "This movie is great."]
+        texts: Optional[list[str]] = request.data.get("texts", [])
 
         if not texts:
+            logging.error('Missing "texts" field in request data')
             return Response(
                 data={"error": 'Missing "texts" field in request data'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        tasks = [self.analyse_text(text) for text in texts]
-        sentiment_results = await asyncio.gather(*tasks)
+        sentiment_results: list[dict[str, float]] = []
+        for text in texts:
+            cache_key: str = f"sentiment:{text}"
 
-        analyses = [
+            cached_result: Optional[dict[str, float]] = cache.get(cache_key)
+            if cached_result:
+                logging.info(f"Sentiment analysis for '{text}' retrieved from cache.")
+                sentiment_results.append(cached_result)
+            else:
+                sentiment: dict[str, float] = await self.analyse_text(text)
+                sentiment_results.append(sentiment)
+                cache.set(cache_key, sentiment, timeout=None)
+
+        analyses: list[Analysis] = [
             Analysis(
                 text=text,
                 sentiment=result['sentiment'],
@@ -79,10 +92,11 @@ class BulkAnalysisViewSet(ViewSet):
             for result, text in zip(sentiment_results, texts)
         ]
         await Analysis.objects.abulk_create(analyses)
+        logging.info(f"Successfully created {len(analyses)} analysis objects.")
 
-        serializer = AnalysisSerializer(analyses, many=True)
+        serializer: AnalysisSerializer = AnalysisSerializer(analyses, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    async def analyse_text(self, text: str) -> Dict[str, float]:
-        sentiment = await analyse_sentiment_async(text)
+    async def analyse_text(self, text: str) -> dict[str, float]:
+        sentiment: dict[str, float] = await analyse_sentiment_async(text)
         return sentiment

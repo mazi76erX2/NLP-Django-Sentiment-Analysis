@@ -39,7 +39,7 @@ async def analyse_sentiment_async(text: str) -> dict[str, float]:
 
         encoded_input = await _encode_text(text)
         outputs: dict = model(encoded_input)
-        logits: tf.Tensor = outputs.logits[0]  # Access logits from the first output
+        logits: tf.Tensor = outputs.logits[0]
         predictions: tf.Tensor = tf.nn.softmax(logits)
 
         top_prediction, top_index = tf.nn.top_k(predictions, k=1)

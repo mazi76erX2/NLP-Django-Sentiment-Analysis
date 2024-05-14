@@ -36,6 +36,11 @@ services:
       retries: 5
     networks:
       - backend
+  redis:
+    restart: unless-stopped
+    image: redis:7.2.4-alpine
+    expose:
+      - 6379
 volumes:
   static_volume: {}
   db: {}
