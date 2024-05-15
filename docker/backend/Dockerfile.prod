@@ -6,8 +6,8 @@ ENV TZ=UTC+2
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y netcat libpq5 build-essential libpq-dev \
-    nginx curl
+RUN apt-get update && apt-get install -y --no-install-recommends gcc netcat \
+    libpq5 build-essential libpq-dev nginx curl
 
 # Install tools
 RUN pip3 install --progress-bar off --upgrade pip
@@ -29,11 +29,15 @@ COPY . .
 # Stage 3: Final image (production-ready)
 FROM app AS final
 
+# Add static files folder
+RUN mkdir /app/backend
+RUN mkdir /app/backend/staticfiles
+
 # Install development dependencies
-RUN pipenv install --dev
+RUN pipenv install
 
 # Set up the entrypoint script
-COPY docker/backend/entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//g' /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+COPY docker/backend/entrypoint.prod.sh /entrypoint.prod.sh
+RUN sed -i 's/\r$//g' /entrypoint.prod.sh
+RUN chmod +x /entrypoint.prod.sh
+ENTRYPOINT ["/entrypoint.prod.sh"]

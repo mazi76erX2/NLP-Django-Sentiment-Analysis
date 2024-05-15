@@ -63,13 +63,34 @@ up:
 	docker compose up -d --build
 
 down:
-	docker compose down
+	docker compose down -v
+
+logs:
+	docker compose logs -f
 
 test-docker:
 	docker compose exec backend python $(APP_DIR)/manage.py test text_analysis
 
+prod-migrate:
+	docker compose exec backend python $(APP_DIR)/manage.py migrate --check --no-input
+
+prod-up:
+	docker compose -f docker-compose.prod.yml up -d --build
+
+prod-down:
+	docker compose -f docker-compose.prod.yml down -v
+
 copy-env:
-	docker compose exec cp .env.example .env
+	exec cp .env.example .env
+
+push-image-aws:
+	docker build -t $(AWS_ACCOUNT_URI):latest .
+
+	aws ecr get-login-password --region $(AWS_REGION) | docker login \
+    --username AWS --password-stdin \
+    $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/django-app:latest
 
 .PHONY: help venv install-packages create-local-database-linux
 	create-local-database-mac drop-local-database run-local migrate test up down

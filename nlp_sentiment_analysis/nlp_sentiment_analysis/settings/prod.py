@@ -1,6 +1,8 @@
 from .base import *
 
 
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -12,7 +14,11 @@ DATABASES = {
     }
 }
 
-
-DEBUG = str2bool(os.environ.get("DEBUG", "true"))
+DEBUG = False
 
 ALLOWED_HOSTS: list[str] = os.environ.get("ALLOWED_HOST_DNS", "").split(" ")
+
+# For admin static files
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
