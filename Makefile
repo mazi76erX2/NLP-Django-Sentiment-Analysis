@@ -66,7 +66,7 @@ down:
 	docker compose down
 
 test-docker:
-	docker compose exec web python manage.py test text_analysis
+	docker compose exec backend python $(APP_DIR)/manage.py test text_analysis
 
 copy-env:
 	docker compose exec cp .env.example .env
