@@ -56,7 +56,7 @@ migrate:
 	$(PYTHON) $(APP_DIR)/manage.py migrate --check --no-input
 
 test:
-	$(PYTHON) $(APP_DIR)/manage.py test
+	$(PYTHON) $(APP_DIR)/manage.py test text_analysis
 
 ### Docker commands ###
 up:
@@ -66,7 +66,7 @@ down:
 	docker compose down
 
 test-docker:
-	docker compose exec web python manage.py test
+	docker compose exec web python manage.py test text_analysis
 
 copy-env:
 	docker compose exec cp .env.example .env

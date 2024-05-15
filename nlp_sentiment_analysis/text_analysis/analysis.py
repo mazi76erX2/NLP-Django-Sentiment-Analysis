@@ -3,17 +3,16 @@ import logging
 from transformers import TFAutoModelForSequenceClassification, AutoTokenizer
 import tensorflow as tf
 
+from django.conf import settings
 
-MODEL: str = "cardiffnlp/twitter-roberta-base-sentiment"
+
+MODEL = settings.MODEL_NAME
+SENTIMENT_LABELS = settings.SENTIMENT_LABELS
+
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(MODEL)
 model: TFAutoModelForSequenceClassification = (
     TFAutoModelForSequenceClassification.from_pretrained(MODEL)
 )
-sentiment_labels: list[str] = ["negative", "neutral", "positive"]
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
 
 async def analyse_sentiment_async(text: str) -> dict[str, float]:
     """
@@ -44,7 +43,7 @@ async def analyse_sentiment_async(text: str) -> dict[str, float]:
 
         top_prediction, top_index = tf.nn.top_k(predictions, k=1)
         predicted_label_id: int = top_index.numpy()[0]
-        predicted_label: str = sentiment_labels[predicted_label_id]
+        predicted_label: str = SENTIMENT_LABELS[predicted_label_id]
         confidence_score: float = top_prediction.numpy()[0]
 
         logging.info(

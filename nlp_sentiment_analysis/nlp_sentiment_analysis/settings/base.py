@@ -147,3 +147,7 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Project settings
+MODEL_NAME: str = "cardiffnlp/twitter-roberta-base-sentiment"
+SENTIMENT_LABELS: list[str] = ["negative", "neutral", "positive"]
