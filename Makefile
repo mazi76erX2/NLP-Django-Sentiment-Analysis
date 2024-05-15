@@ -12,10 +12,6 @@ export PIPENV_VENV_IN_PROJECT=1
 PYTHON := python3
 PIP := $(PYTHON) -m pip
 PIPENV := $(PYTHON) -m pipenv
-PYLINT := $(PIPENV) run pylint
-BLACK := $(PIPENV) run black
-MYPY := $(PIPENV) run mypy
-ISORT := $(PIPENV) run isort
 
 POSTGRES_COMMAND := /Applications/Postgres.app/Contents/Versions/latest/bin
 
@@ -34,22 +30,6 @@ venv:
 
 install-packages:
 	pipenv install --dev
-
-lint:
-	$(PYLINT) $(APP_DIR) --exit-zero
-
-format:
-	$(BLACK) $(APP_DIR)
-	$(ISORT) $(APP_DIR)
-
-check-typing:
-	$(MYPY) $(APP_DIR)
-
-lint-and-format: ## Lint, format and static-check
-	$(PYLINT) -E $(APP_DIR) --exit-zero
-	$(MYPY) $(APP_DIR)
-	$(BLACK) $(APP_DIR)
-	$(ISORT) $(APP_DIR)
 
 create-local-database-linux:
 	sudo -u postgres psql -c 'create database $(DATABASE_NAME);'
@@ -75,9 +55,22 @@ run-local:
 migrate:
 	$(PYTHON) $(APP_DIR)/manage.py migrate --check --no-input
 
-checkmigrations:
-	$(PYTHON) $(APP_DIR)/manage.py makemigrations --check --no-input --dry-run
+test:
+	$(PYTHON) $(APP_DIR)/manage.py test
 
-.PHONY: help venv install-packages lint format check-typing lint-and-format
-	create-local-database-linux create-local-database-mac drop-local-database
-	run-local migrate checkmigrations
+### Docker commands ###
+up:
+	docker compose up -d --build
+
+down:
+	docker compose down
+
+test-docker:
+	docker compose exec web python manage.py test
+
+copy-env:
+	docker compose exec cp .env.example .env
+
+.PHONY: help venv install-packages create-local-database-linux
+	create-local-database-mac drop-local-database run-local migrate test up down
+	test-docker copy-env
