@@ -1,4 +1,5 @@
 # NLP Sentiment Analysis Project
+
 A high-throughput NLP API using Django REST to perform sentiment analysis on text input.
 
 This project is an asynchronous Django application for sentiment analysis using a pre-trained RoBERTa model. The application analyzes the sentiment of given text and returns the sentiment label along with a confidence score.
@@ -25,26 +26,35 @@ This project is an asynchronous Django application for sentiment analysis using 
 ## Installation
 
 ### Local Setup
+
 note: You can use the makefile commands to run the commands below
 
 1. **Clone the repository:**
+
     ```bash
     git clone https://github.com/yourusername/nlp-sentiment-analysis.git
     cd nlp-sentiment-analysis
     ```
 
-2. **Setup a virtual environment:**
+3. **Setup a virtual environment:**
     ```bash
     pip install -U pipenv
     pipenv shell
     ```
 
-3. **Install dependencies:**
+4. **Install dependencies:**
     ```bash
     pipenv install --dev
     ```
 
-4. **Create and configure the database:**
+5. **Download ML models:**
+
+    Only run this command if you haven't downloaded the models yet to the nlp_sentiment_analysis/ml_models folder
+    ```bash
+    python nlp_sentiment_analysis/manage.py download_models
+    ```
+
+6. **Create and configure the database:**
     - For Linux:
         ```bash
         sudo -u postgres psql -c 'create database your_database_name;'
