@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "5.0.6"
+django = "5.1"
 djangorestframework = "3.15.1"
 python-dotenv = "1.0.1"
 psycopg2-binary = "2.9.9"
@@ -28,4 +28,4 @@ djangorestframework-stubs = "*"
 pylint = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"
